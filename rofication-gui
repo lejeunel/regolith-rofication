@@ -3,7 +3,6 @@
 import sys, getopt, os
 
 from rofication import RoficationGui, RoficationClient
-import xrp
 
 # Default settings
 options = {'markup': True,
@@ -20,21 +19,29 @@ options = {'markup': True,
            'eh': '2',
            'lines': '10'}
 
+# this parses the Xresources formatted config
 def parse_cfg(path):
     if(not os.path.exists(path)):
         raise Exception(
             'Specified config file {} not found'.format(path))
     else:
-        cfg = xrp.parse_file(path, encoding='utf8').resources
-
-        # need to remove "rofi." prefixes
         new_cfg = dict()
-        for k, v in cfg.items():
-            if('rofi.' in k):
-                new_cfg[k.replace('rofi.', '')] = v
+        file = open(path, 'r')
+        content = file.read()
+        lines = content.split("\n") #split it into lines
+        for line in lines:
+            if(len(line) > 0):
+                if(line[0] != '!'):
+                    # remove spaces and tabs
+                    k, v = line.split(':')
+                    k = ''.join(k.split())
+                    v = ''.join(v.split())
+                    if('rofi.' in k):
+                        new_cfg[k.replace('rofi.', '')] = v
 
         return new_cfg
 
+# convert dict to list
 def cfg_to_list(cfg):
     list_ = []
     for k, v in cfg.items():

@@ -1,0 +1,3 @@
+[submodule "xparser"]
+	path = xparser
+	url = https://github.com/taesko/xparser.git
