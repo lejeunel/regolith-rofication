@@ -1,8 +1,75 @@
 #!/usr/bin/env python3
 
-import sys
+import sys, getopt, os
 
 from rofication import RoficationGui, RoficationClient
+import xrp
+
+# Default settings
+options = {'markup': True,
+           'kb-accept-entry': 'Control+j,Control+m,KP_Enter',
+           'kb-remove-char-forward': 'Control+d',
+           'kb-delete-entry': '',
+           'kb-custom-1': 'Delete',
+           'kb-custom-2': 'Return',
+           'kb-custom-3': 'Alt+r',
+           'kb-custom-4': 'Shift+Delete',
+           'markup-rows': True,
+           'sep': '\\0',
+           'format': 'i',
+           'eh': '2',
+           'lines': '10'}
+
+def parse_cfg(path):
+    if(not os.path.exists(path)):
+        raise Exception(
+            'Specified config file {} not found'.format(path))
+    else:
+        cfg = xrp.parse_file(path, encoding='utf8').resources
+
+        # need to remove "rofi." prefixes
+        new_cfg = dict()
+        for k, v in cfg.items():
+            if('rofi.' not in k):
+                raise Exception(
+                    'Key {} does not match specification. Should start be of rofi.<attribute>'.format(path))
+            else:
+                new_cfg[k.replace('rofi.', '')] = v
+
+        return new_cfg
+
+def cfg_to_list(cfg):
+    list_ = []
+    for k, v in cfg.items():
+        if(not isinstance(v, bool)):
+            list_ += [k, v]
+        elif(v):
+            list_.append(k)
+
+    return list_
+
+
+def main(argv):
+    cfg = None
+    help_msg = 'test.py -c <configfile>'
+    try:
+        opts, args = getopt.getopt(argv,"hc:",["configfile="])
+    except getopt.GetoptError:
+        print(help_msg)
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print(help_msg)
+            sys.exit()
+        elif opt == '-c':
+            cfgfile = arg
+            print('Config file is {}'.format(cfgfile))
+            cfg = parse_cfg(cfgfile)
+            cfg = cfg_to_list(cfg)
+            print(cfg)
+    RoficationGui(cfg=cfg,
+                  client=RoficationClient(sys.stdout)).run()
 
 if __name__ == '__main__':
-    RoficationGui(RoficationClient(sys.stdout)).run()
+    main(sys.argv[1:])
+

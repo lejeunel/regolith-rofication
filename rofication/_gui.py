@@ -12,20 +12,7 @@ HTML_TAGS_PATTERN = re.compile(r'<[^>]*?>')
 
 ROFI_COMMAND = ('rofi',
                 '-dmenu',
-                '-p', 'Notifications',
-                '-markup',
-                '-kb-accept-entry', 'Control+j,Control+m,KP_Enter',
-                '-kb-remove-char-forward', 'Control+d',
-                '-kb-delete-entry', '',
-                '-kb-custom-1', 'Delete',
-                '-kb-custom-2', 'Return',
-                '-kb-custom-3', 'Alt+r',
-                '-kb-custom-4', 'Shift+Delete',
-                '-markup-rows',
-                '-sep', '\\0',
-                '-format', 'i',
-                '-eh', '2',
-                '-lines', '10')
+                '-p', 'Notifications')
 
 
 def strip_tags(value: str) -> str:
@@ -61,8 +48,9 @@ def call_rofi(entries: Iterable[str], additional_args: List[str] = None) -> (int
 
 
 class RoficationGui():
-    def __init__(self, client: RoficationClient = None):
+    def __init__(self, cfg: list = None, client: RoficationClient = None):
         self._client: RoficationClient = RoficationClient() if client is None else client
+        self.cfg = cfg
 
     def run(self) -> None:
         selected = 0
@@ -93,6 +81,9 @@ class RoficationGui():
             if selected >= 0:
                 args.append('-selected-row')
                 args.append(str(selected))
+
+            if(self.cfg is not None):
+                args += self.cfg
 
             # Show rofi
             selected, exit_code = call_rofi(entries, args)
