@@ -30,10 +30,7 @@ def parse_cfg(path):
         # need to remove "rofi." prefixes
         new_cfg = dict()
         for k, v in cfg.items():
-            if('rofi.' not in k):
-                raise Exception(
-                    'Key {} does not match specification. Should start be of rofi.<attribute>'.format(path))
-            else:
+            if('rofi.' in k):
                 new_cfg[k.replace('rofi.', '')] = v
 
         return new_cfg

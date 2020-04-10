@@ -64,6 +64,14 @@ desktop environments.
 
 The **Rofication** gui consists of a small python script wrapping **Rofi**. The GUI allows the user
 to view notification, mark them seen and dismiss them.
+Also, it allows to set custom keybindings options via a **Xresources** config
+file (see **config.example**):
+
+```
+./rofication-gui -c config
+```
+
+
 
 ## CLI
 
