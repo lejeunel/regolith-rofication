@@ -67,11 +67,6 @@ to view notification, mark them seen and dismiss them.
 Also, it allows to set custom keybindings options via a **Xresources** config
 file (see **config.example**):
 
-```
-./rofication-gui -c config
-```
-
-
 
 ## CLI
 
