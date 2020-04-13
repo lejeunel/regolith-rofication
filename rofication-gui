@@ -1,79 +1,40 @@
 #!/usr/bin/env python3
 
-import sys, getopt, os
+import sys, getopt, os, subprocess
 
 from rofication import RoficationGui, RoficationClient
 
-# Default settings
-options = {'markup': True,
-           'kb-accept-entry': 'Control+j,Control+m,KP_Enter',
-           'kb-remove-char-forward': 'Control+d',
-           'kb-delete-entry': '',
-           'kb-custom-1': 'Delete',
-           'kb-custom-2': 'Return',
-           'kb-custom-3': 'Alt+r',
-           'kb-custom-4': 'Shift+Delete',
-           'markup-rows': True,
-           'sep': '\\0',
-           'format': 'i',
-           'eh': '2',
-           'lines': '10'}
+def read_xresources(prefix):
+    """
+    parses xrdb for rofi related parameters
+    """
+    props = {}
+    x = subprocess.run(['xrdb', '-query'], stdout=subprocess.PIPE)
+    lines = x.stdout.decode().split('\n')
+    for line in filter(lambda l : l.startswith(prefix), lines):
+        prop, _, value = line.partition(':\t')
+        prop = prop.replace('rofi.', '')
+        props[prop] = value
+    return props
 
-# this parses the Xresources formatted config
-def parse_cfg(path):
-    if(not os.path.exists(path)):
-        raise Exception(
-            'Specified config file {} not found'.format(path))
-    else:
-        new_cfg = dict()
-        file = open(path, 'r')
-        content = file.read()
-        lines = content.split("\n") #split it into lines
-        for line in lines:
-            if(len(line) > 0):
-                if(line[0] != '!'):
-                    # remove spaces and tabs
-                    k, v = line.split(':')
-                    k = ''.join(k.split())
-                    v = ''.join(v.split())
-                    if('rofi.' in k):
-                        new_cfg[k.replace('rofi.', '')] = v
+def dict_to_list(cfg):
+    """
+    convert config from dict to "command-line" string
+    """
+    # convert to list
+    list_props = [('-'+k, v)  if not isinstance(v, bool) else ('-'+k,)
+                  for k, v in cfg.items()
 
-        return new_cfg
-
-# convert dict to list
-def cfg_to_list(cfg):
-    list_ = []
-    for k, v in cfg.items():
-        if(not isinstance(v, bool)):
-            list_ += [k, v]
-        elif(v):
-            list_.append(k)
-
-    return list_
-
-
-def main(argv):
-    cfg = None
-    help_msg = 'test.py -c <configfile>'
-    try:
-        opts, args = getopt.getopt(argv,"hc:",["configfile="])
-    except getopt.GetoptError:
-        print(help_msg)
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print(help_msg)
-            sys.exit()
-        elif opt == '-c':
-            cfgfile = arg
-            print('Config file is {}'.format(cfgfile))
-            cfg = parse_cfg(cfgfile)
-            cfg = cfg_to_list(cfg)
-            print(cfg)
-    RoficationGui(cfg=cfg,
-                  client=RoficationClient(sys.stdout)).run()
+    ]
+    # convert to flat list
+    return [item for sublist in list_props for item in sublist]
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
 
+    # override default_options with ones of xrdb
+    cfg = read_xresources('rofi')
+
+    cfg = dict_to_list(cfg)
+
+    RoficationGui(cfg=cfg,
+                  client=RoficationClient(sys.stdout)).run()

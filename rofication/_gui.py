@@ -48,7 +48,7 @@ def call_rofi(entries: Iterable[str], additional_args: List[str] = None) -> (int
 
 
 class RoficationGui():
-    def __init__(self, cfg: list = None, client: RoficationClient = None):
+    def __init__(self, cfg: list, client: RoficationClient = None):
         self._client: RoficationClient = RoficationClient() if client is None else client
         self.cfg = cfg
 
@@ -82,8 +82,7 @@ class RoficationGui():
                 args.append('-selected-row')
                 args.append(str(selected))
 
-            if(self.cfg is not None):
-                args += self.cfg
+            args += self.cfg
 
             # Show rofi
             selected, exit_code = call_rofi(entries, args)
